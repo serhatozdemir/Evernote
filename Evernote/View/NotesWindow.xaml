@@ -1,0 +1,113 @@
+﻿<Window x:Class="Evernote.View.NotesWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:i ="http://schemas.microsoft.com/xaml/behaviors"
+        xmlns:local="clr-namespace:Evernote.View"
+        xmlns:vm="clr-namespace:Evernote.ViewModel"
+        xmlns:uc ="clr-namespace:Evernote.View.UserControl"
+        mc:Ignorable="d"
+        Title="NotesWindow" Height="400" Width="600">
+    <Window.Resources>
+        <ResourceDictionary>
+            <vm:NotesVm x:Key="vm"/>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <DockPanel DataContext="{StaticResource vm}">
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="File">
+                <MenuItem Header="New Notebook"
+                          Command="{Binding NewNotebook}" Foreground="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
+                <MenuItem Header="New Note"
+                          Command="{Binding NewNote}"
+                          CommandParameter="{Binding SelectedNotebook}"/>
+                <Separator />
+                <MenuItem Header="Exit"
+                          Click="MenuItem_OnClick"/>
+            </MenuItem>
+            <Menu>
+                <StatusBar DockPanel.Dock="Bottom">
+                    <StatusBarItem>
+                        <TextBlock x:Name="statusTextBlock"/>
+                    </StatusBarItem>
+                </StatusBar>
+            </Menu>
+        </Menu>
+        <ListView DockPanel.Dock="Left"
+                  Background="MidnightBlue"
+                  Width="140"
+                  SelectedValue="{Binding SelectedNotebook, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                  ItemsSource="{Binding Notebooks}">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <uc:DisplayNotebook Notebook="{Binding}">
+                            <uc:DisplayNotebook.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Rename"
+                                              Command="{Binding Source={StaticResource vm}, Path=Edit}"/>
+                                </ContextMenu>
+                            </uc:DisplayNotebook.ContextMenu>
+                        </uc:DisplayNotebook>
+                        <TextBox Text="{Binding Name, Mode=TwoWay}"
+                            Visibility="{Binding Source={StaticResource vm},Path=IsVisible}">
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="LostFocus">
+                                    <i:InvokeCommandAction Command="{Binding Source={StaticResource vm},Path=EndEditing}"
+                                                           CommandParameter="{Binding}"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </TextBox>
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+        <ListView DockPanel.Dock="Left"
+                  Width="155"
+                  SelectedValue="{Binding SelectedNote, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                  ItemsSource="{Binding Notes}">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <uc:DisplayNote Note="{Binding}"/>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+        <ToolBarTray DockPanel.Dock="Top">
+            <ToolBar>
+                <Button Content="Speech"
+                        Click="SpeechButton_Click"/>
+                <ToggleButton x:Name="boldButton"
+                        Click="boldButton_Click">
+                    <TextBlock Text="B"
+                               FontWeight="Bold"/>
+                </ToggleButton>
+                <ToggleButton x:Name="italicButton"
+                              Click="italicButton_OnClick">
+                    <TextBlock Text="I"
+                               FontStyle="Italic"/>
+                </ToggleButton>
+                <ToggleButton x:Name="underlineButton"
+                              Click="underlineButton_OnClick">
+                    <TextBlock Text="U"
+                               TextDecorations="Underline"/>
+                </ToggleButton>
+                <ComboBox x:Name="fontFamilyComboBox" 
+                          Width="100"
+                          SelectionChanged="fontFamilyComboBox_OnSelectionChanged"/>
+                <ComboBox x:Name="fontSizeComboBox"
+                          Width="50"
+                          IsEditable="True"
+                          SelectionChanged="FontSizeComboBox_OnSelectionChanged"/>
+                <Button Content="Save"
+                        Click="SaveButton_Click"/>
+            </ToolBar>
+        </ToolBarTray>
+        <Grid>
+            <RichTextBox x:Name="contentRichTextBox"
+                         TextChanged="contentRichTextBox_TextChanged"
+                         SelectionChanged="ContentRichTextBox_OnSelectionChanged"/>
+        </Grid>
+    </DockPanel>
+</Window>
